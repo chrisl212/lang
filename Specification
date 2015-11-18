@@ -1,0 +1,32 @@
+1 Tokens
+    Tokens are the smallest component of the pewter langauage. They are essentially the 'words' that make up the language's expressions. The following are the valid types
+        - variable name (must begin with a letter)
+        - keyword
+        - function name
+        - string literal
+2 Expressions
+    Expressions are groupings of tokens that serve some purpose. Expressions are ended with a newline character.
+3 Functions
+    Functions are groupings of expressions. A value may be returned from a function. The syntax for the declaration of a function is as follows
+
+            def func(arg1 arg2)
+                #function body goes here
+            end
+
+    A function is ended using the 'end' keyword. A function's name can be any valid ASCII character. The sytax to call a function is as follows
+
+            [func arg1 arg2]
+    pewter uses Polish-prefix notation to execute functions.
+
+4 Variables
+    Variables represent addresses in memory in which data can be stored. There are 4 basic variable types that are supplied by the language. These are strings, integers, arrays, and dictionaries. The syntax to declare a variable is as follows
+
+            def varName
+
+    The variable's type will not be decided until assignment; this type is not permament and can be changed if the variable is reassigned to another type.
+5 Assignment
+    A variable is assigned using the '=' character. The left side of this character must be a valid variable name and the right side must contain an expression that returns a value.
+
+            def num = 3
+            def str = "string"
+            def ret = (func arg1 arg2)
