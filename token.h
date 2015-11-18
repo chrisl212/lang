@@ -10,7 +10,7 @@
 #define pewter_lang_token_h
 
 enum tok_type {
-    T_VAR,
+    T_VAR = 1,
     T_FUNC,
     T_KEY,
     T_LIT,

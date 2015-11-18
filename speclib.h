@@ -14,10 +14,12 @@
 struct var;
 struct array;
 
+struct var *minus(struct array *);
 struct var *divd(struct array *);
 struct var *mult(struct array *);
 struct var *add(struct array *);
 struct var *specprnt(struct array *);
 struct var *idx(struct array *);
+struct var *input(struct array *);
 
 #endif /* defined(__pewter_lang__speclib__) */
