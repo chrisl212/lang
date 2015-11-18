@@ -24,7 +24,8 @@ struct func {
     struct func *next;
     enum {
         F_NORM,
-        F_SPEC
+        F_SPEC,
+        F_CTL
     } type;
     struct var *(*spec)(struct array *args);
 };

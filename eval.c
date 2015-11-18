@@ -37,8 +37,8 @@ struct var *strtolit(const char *s, struct func *f, struct expr *expr);
 void specfunc(void);
 
 struct func *strtofunc(const char *s, struct func *f, struct expr *expr) {
-    char *argstr, *funcname, *tok;
-    struct func *call;
+    char *argstr, *funcname, *tok, *funcpy;
+    struct func *call, *funcarg;
     struct token *atok;
     struct var *arg;
     
@@ -47,6 +47,10 @@ struct func *strtofunc(const char *s, struct func *f, struct expr *expr) {
     argstr = strdup(strpbrk(tok, " "));
     funcname = strtok(tok, " ");
     call = dictobj(funcs, funcname);
+    if (!call) {
+        fprintf(stderr, "No such function %s\nLine: %s\n", funcname, expr->expr);
+        return NULL;
+    }
     call->args = arrnew(NULL);
     arg = NULL;
     
@@ -65,6 +69,16 @@ struct func *strtofunc(const char *s, struct func *f, struct expr *expr) {
                     fprintf(stderr, "No such variable %s\nLine: %s\n", funcname, expr->expr);
                 }
                 break;
+            case T_FUNC:
+                funcpy = strdup(atok->tok);
+                funcpy++;
+                funcpy[strlen(funcpy) - 1] = 0;
+                funcarg = strtofunc(funcpy, f, expr);
+                if (funcarg->type == F_NORM)
+                    arg = exec(funcarg);
+                else if (funcarg->type == F_SPEC)
+                    arg = funcarg->spec(funcarg->args);
+                break;
                 
             default:
                 atok = atok->next;
@@ -77,11 +91,13 @@ struct func *strtofunc(const char *s, struct func *f, struct expr *expr) {
 }
 
 struct var *strtolit(const char *s, struct func *f, struct expr *expr) {
-    struct var *arg;
+    struct var *arg, *d1, *d2;
     struct token *tok;
     array_t *arr;
+    dict_t *dict;
     char *funcname;
     
+    d1 = d2 = NULL;
     funcname = strdup(s);
     arg = calloc(1, sizeof(struct var));
     
@@ -116,6 +132,34 @@ struct var *strtolit(const char *s, struct func *f, struct expr *expr) {
             tok = tok->next;
         }
     }
+    else if (*funcname == '{') {
+        funcname++;
+        funcname[strlen(funcname) - 1] = 0;
+        arg->type = V_DIC;
+        tok = gettok(funcname);
+        
+        arg->val.aval = arrnew(NULL);
+        dict = arg->val.dval;
+        while (tok) {
+            if (tok->type == T_VAR) {
+                if (!d1)
+                    d1 = dictobj(f->scope, tok->tok);
+                else if (!d2)
+                    d2 = dictobj(f->scope, tok->tok);
+            }
+            else if (tok->type == T_LIT) {
+                if (!d1)
+                    d1 = strtolit(tok->tok, f, expr);
+                else if (!d2)
+                    d2 = strtolit(tok->tok, f, expr);
+            }
+            if (d1 && d2) {
+                dictadd(dict, d2, d1->val.sval);
+                d1 = d2 = NULL;
+            }
+            tok = tok->next;
+        }
+    }
     return arg;
 }
 
@@ -123,13 +167,14 @@ struct var *exec(struct func *f) {
     struct expr *expr;
     struct token *tok;
     struct var *v, *callres, *arg;
-    struct func *call;
-    char *aname;
+    struct func *call, *ctl;
+    char *aname, *tokcp;
     unsigned i;
     size_t len;
 
     i = 0;
-    f->scope = dictnew(NULL, NULL);
+    if (!f->scope)
+        f->scope = dictnew(NULL, NULL);
     while (i < arrcnt(f->args)) {
         aname = arrobj(f->argnms, i);
         v = arrobj(f->args, i++);
@@ -140,31 +185,76 @@ struct var *exec(struct func *f) {
     for (expr = f->expr; expr != NULL; expr = expr->next) {
         
         for (tok = expr->tok; tok != NULL; tok = tok->next) {
+            if (!tok->tok)
+                break;
             if (strcmp(tok->tok, "func") == 0 && tok->next->type == T_FUNC) {
                 expr->type = E_DECL;
                 continue;
             }
+            else if (f->type == F_CTL && strcmp(tok->tok, "stop") == 0)
+                return NULL;
             else if (tok->type == T_FUNC && expr->type != E_DECL && *(tok->tok) == '(') {
-                tok->tok++;
-                len = strlen(tok->tok);
-                tok->tok[len-1] = 0;
+                tokcp = strdup(tok->tok);
+                tokcp++;
+                len = strlen(tokcp);
+                tokcp[len-1] = 0;
                 
-                call = strtofunc(tok->tok, f, expr);
+                call = strtofunc(tokcp, f, expr);
                 
-                if (call->type == F_NORM)
+                if (call->type == F_NORM || call->type == F_CTL)
                     callres = exec(call);
                 else
                     callres = call->spec(call->args);
                 if (expr->next && strcmp(expr->next->tok->tok, "end") == 0)
                     return callres;
             }
+            else if (tok->type == T_CTL) {
+                if (strcmp(tok->tok, "while") == 0) {
+                    tok = tok->next;
+                    tokcp = strdup(tok->tok);
+                    tokcp++;
+                    tokcp[strlen(tokcp) - 1] = 0;
+                    call = strtofunc(tokcp, f, expr);
+                    while ((callres = (call->type == F_SPEC)?call->spec(call->args):exec(call))->val.bval) {
+                        ctl = calloc(1, sizeof(struct func));
+                        ctl->expr = expr->next;
+                        ctl->type = F_CTL;
+                        ctl->args = arrnew(NULL);
+                        ctl->scope = f->scope;
+                        exec(ctl);
+                        call = strtofunc(tokcp, f, expr);
+                    }
+                    while (!strstr(expr->expr, "stop"))
+                        expr = expr->next;
+                }
+                else if (strcmp(tok->tok, "if") == 0) {
+                    tok = tok->next;
+                    tokcp = strdup(tok->tok);
+                    tokcp++;
+                    tokcp[strlen(tokcp) - 1] = 0;
+                    call = strtofunc(tokcp, f, expr);
+                    if ((callres = (call->type == F_SPEC)?call->spec(call->args):exec(call))->val.bval) {
+                        ctl = calloc(1, sizeof(struct func));
+                        ctl->expr = expr->next;
+                        ctl->type = F_CTL;
+                        ctl->args = arrnew(NULL);
+                        ctl->scope = f->scope;
+                        exec(ctl);
+                        call = strtofunc(tokcp, f, expr);
+                    }
+                    while (!strstr(expr->expr, "stop"))
+                        expr = expr->next;
+                }
+            }
             else if (expr->next && strcmp(expr->next->tok->tok, "end") == 0 && tok->type == T_VAR) {
                 return dictobj(f->scope, tok->tok);
             }
             else if (tok->type == T_VAR) {
-                v = calloc(1, sizeof(struct var));
-                v->name = tok->tok;
-                dictadd(f->scope, v, v->name);
+                if (!(v = dictobj(f->scope, tok->tok))) {
+                    v = calloc(1, sizeof(struct var));
+                    v->name = tok->tok;
+                    dictadd(f->scope, v, v->name);
+                }
                 if (tok->next && tok->next->type == T_ASS) {
                     tok = tok->next->next;
                     if (tok->type == T_LIT) {
@@ -173,11 +263,12 @@ struct var *exec(struct func *f) {
                         v->val = callres->val;
                     }
                     else if (tok->type == T_FUNC) {
-                        tok->tok++;
-                        len = strlen(tok->tok);
-                        tok->tok[len-1] = 0;
+                        tokcp = strdup(tok->tok);
+                        tokcp++;
+                        len = strlen(tokcp);
+                        tokcp[len-1] = 0;
                      
-                        call = strtofunc(tok->tok, f, expr);
+                        call = strtofunc(tokcp, f, expr);
                         
                         if (call->type == F_NORM)
                             callres = exec(call);
@@ -186,6 +277,11 @@ struct var *exec(struct func *f) {
                         v->type = callres->type;
                         v->val = callres->val;
                         continue;
+                    }
+                    else if (tok->type == T_VAR) {
+                        callres = dictobj(f->scope, tok->tok);
+                        v->type = callres->type;
+                        v->val = callres->val;
                     }
                 }
             }
@@ -207,7 +303,9 @@ void parse(struct expr *e) {
     for (expr = e; expr != NULL; expr = expr->next) {
         
         for (tok = expr->tok; tok != NULL; tok = tok->next) {
-            if (strcmp(tok->tok, "func") == 0 && tok->next->type == T_FUNC) {
+            if (!tok->tok)
+                break;
+            if (strcmp(tok->tok, "func") == 0 && tok->next && tok->next->type == T_FUNC) {
                 tok = tok->next;
                 edup = strdup(tok->tok);
                 funcnm = strtok(edup, "(");
@@ -227,7 +325,7 @@ void parse(struct expr *e) {
                 }
             }
             else if (strcmp(tok->tok, "end") != 0) {
-
+                
             }
             if (strcmp(tok->tok, "end") == 0) {
                 fexpr = f->expr;
@@ -245,12 +343,12 @@ void parse(struct expr *e) {
 
 struct token *gettok(char *s) {
     struct token *tok, *ret;
-    int i;
-    bool quot, func, arr;
+    int i, nested;
+    bool quot, func, arr, dict;
     
     ret = calloc(1, sizeof(struct token));
     
-    for (quot = arr = func = NO, i = 0, tok = ret; *s; s++) {
+    for (quot = dict = arr = func = NO, i = nested = 0, tok = ret; *s; s++) {
         if (!tok->tok)
             tok->tok = malloc(1), tok->type = T_VAR;
         else
@@ -271,31 +369,37 @@ struct token *gettok(char *s) {
             arr = (arr) ? NO : YES;
             tok->type = T_LIT;
         }
+        else if ((*s == '{' || *s == '}') && !func) {
+            dict = (dict) ? NO : YES;
+            tok->type = T_LIT;
+        }
         else if (isdigit(*s) && i < 1) {
             tok->type = T_LIT;
         }
         else if (*s == '#')
             return ret;
         
-        if (*s != ' ' || ((quot || func || arr) && *s == ' ') || (func && *s == '('))
+        if (*s != ' ' || ((quot || func || arr || dict) && *s == ' ') || (func && *s == '('))
             tok->tok[i++] = *s;
         else {
-            tok->tok[i+1] = 0;
+            tok->tok[i] = 0;
             i = 0;
-            if (strcmp(tok->tok, "func") == 0)
+            if (iskey(tok))
                 tok->type = T_KEY;
             else if (*(tok->tok) == '=')
                 tok->type = T_ASS;
-            else if (*(tok->tok) == ' ' || *(tok->tok) == 0)
+            else if (iswhte(tok))
                 tok->type = T_WHT;
+            else if (isctrl(tok))
+                tok->type = T_CTL;
             
             tok->next = calloc(1, sizeof(struct token));
             tok = tok->next;
         }
     }
-    if (strcmp(tok->tok, "end") == 0)
+    if (iskey(ret))
         ret->type = T_KEY;
-    return ret;
+    return remwht(ret);
 }
 
 struct expr *getexpr(const char *s) {
@@ -389,7 +493,7 @@ void specfunc(void) {
     dictadd(funcs, f, f->name);
     
     f = calloc(1, sizeof(struct func));
-    f->name = "idx";
+    f->name = "obj";
     f->type = F_SPEC;
     f->spec = idx;
     dictadd(funcs, f, f->name);
@@ -398,5 +502,17 @@ void specfunc(void) {
     f->name = "input";
     f->type = F_SPEC;
     f->spec = input;
+    dictadd(funcs, f, f->name);
+    
+    f = calloc(1, sizeof(struct func));
+    f->name = ">";
+    f->type = F_SPEC;
+    f->spec = grtr;
+    dictadd(funcs, f, f->name);
+    
+    f = calloc(1, sizeof(struct func));
+    f->name = "=";
+    f->type = F_SPEC;
+    f->spec = eq;
     dictadd(funcs, f, f->name);
 }

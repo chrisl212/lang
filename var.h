@@ -18,13 +18,15 @@ struct var {
         V_STR,
         V_INT,
         V_ARR,
-        V_DIC
+        V_DIC,
+        V_BOOL
     } type;
     union {
         char *sval;
         long double lval;
         struct array *aval;
         struct dict *dval;
+        unsigned int bval;
     } val;
 };
 

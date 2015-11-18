@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "var.h"
+#include "dict.h"
 #include "array.h"
 #include "speclib.h"
 
@@ -40,12 +41,15 @@ struct var *arith(struct array *args, ops op) {
                     break;
                 case SUB:
                     ret->val.lval -= v->val.lval;
+                    ret->type = V_INT;
                     break;
                 case MULT:
                     ret->val.lval *= v->val.lval;
+                    ret->type = V_INT;
                     break;
                 case DIVID:
                     ret->val.lval /= v->val.lval;
+                    ret->type = V_INT;
                     break;
                     
                 default:
@@ -116,7 +120,11 @@ struct var *idx(struct array *args) {
     arr = arrobj(args, 0);
     idx = arrobj(args, 1);
     
-    return arrobj(arr->val.aval, (unsigned)idx->val.lval);
+    if (arr->type == V_ARR)
+        return arrobj(arr->val.aval, (unsigned)idx->val.lval);
+    else if (arr->type == V_DIC)
+        return dictobj(arr->val.dval, idx->val.sval);
+    return NULL;
 }
 
 struct var *input(struct array *args) {
@@ -139,4 +147,29 @@ struct var *input(struct array *args) {
     v->val.sval = buf;
     v->name = "__input__";
     return v;
+}
+
+struct var *grtr(struct array *args) {
+    struct var *ret, *a1, *a2;
+    a1 = arrobj(args, 0);
+    a2 = arrobj(args, 1);
+    
+    ret = calloc(1, sizeof(struct var));
+    ret->type = V_BOOL;
+    ret->val.bval = (a1->val.lval > a2->val.lval);
+    return ret;
+}
+
+struct var *eq(struct array *args) {
+    struct var *ret, *a1, *a2;
+    a1 = arrobj(args, 0);
+    a2 = arrobj(args, 1);
+    
+    ret = calloc(1, sizeof(struct var));
+    ret->type = V_BOOL;
+    if (a1->type == V_INT)
+        ret->val.bval = (a1->val.lval == a2->val.lval);
+    else if (a1->type == V_STR)
+        ret->val.bval = (strcmp(a1->val.sval, a2->val.sval)) ? 0 : 1;
+    return ret;
 }

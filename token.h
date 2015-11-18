@@ -15,7 +15,8 @@ enum tok_type {
     T_KEY,
     T_LIT,
     T_ASS,
-    T_WHT
+    T_WHT,
+    T_CTL
 };
 
 struct token {
@@ -23,5 +24,10 @@ struct token {
     enum tok_type type;
     struct token *next;
 };
+
+unsigned char iskey(struct token *);
+unsigned char iswhte(struct token *);
+unsigned char isctrl(struct token *);
+struct token *remwht(struct token *);
 
 #endif

@@ -1,27 +1,30 @@
-func pow2(n)
-    (* n n)
+func pow(m n)
+    o = m
+    if (= n 0)
+        m = 1
+    stop
+    n = (- n 1)
+    while (> n 0)
+        m = (* m o)
+        n = (- n 1)
+    stop
+    m
 end
-
-#the 'main' function of this langauge.
 
 func entry(argc argv)
     (output "Enter your name")
 
-    name = (input 0)
-    s2 = (+ "Hello, " name ", how is your day going?")
-    (output s2)
+    q = (pow 4 2); (output (pow 4 (- 9 6))); # expressions can be separated by either a newline or semicolon
 
-    n = 532; q = (pow2 n); (output q); q = (- 5 4); (output q) # expressions can be separated by either a newline or semicolon
-
-    arg = (idx argv 1) #idx is the current solution for 'object at index' -- likely to change
+    arg = (obj argv 1) #idx is the current solution for 'object at index' -- likely to change
     (output arg)
 
     arg = 389429
     (output arg " Swag") #print takes an unlimited number of args
 
-    array = ["object 1" "object 2" ["object 3"]] #nested literals
-    o = (idx array 2)
-    p = (idx o 0)
-    (output p)
-    # dictionary = {"key 1" "object 1" "key 2" "object 2"} dictionary syntax
+    array = ["object 1" "object 2" 1] #nested literals
+    (output (obj array 1))
+
+    dict = {"key 1" "object 1" "key 2" "object 2"} # dictionary syntax
+    (output (obj dict "key 1"))
 end
