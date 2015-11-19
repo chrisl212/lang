@@ -21,8 +21,8 @@ func main(argc argv)
     arg = 389429
     (output arg " Swag") #print takes an unlimited number of args
 
-    array = ["object 1" "object 2" "asf"] #nested literals
-    (output (obj array 1))
+    array = [0 "object 1" "object 2" ["asfd" "asdasdasd" 0]]
+    (output (obj array 0))
 
     dict = {"key 1" "object 1" "key 2" "object 2"} # dictionary syntax
     (output (obj dict "key 1"))

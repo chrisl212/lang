@@ -345,12 +345,12 @@ void parse(struct expr *e) {
 
 struct token *gettok(char *s) {
     struct token *tok, *ret;
-    int i, nested;
+    int i, nestfunc, nestarr;
     bool quot, func, arr, dict;
     
     ret = calloc(1, sizeof(struct token));
     
-    for (quot = dict = arr = func = NO, i = 0, nested = 0, tok = ret; *s; s++) {
+    for (quot = dict = arr = func = NO, i = nestfunc = nestarr = 0, tok = ret; *s; s++) {
         if (!tok->tok)
             tok->tok = malloc(1), tok->type = T_VAR;
         else
@@ -359,20 +359,27 @@ struct token *gettok(char *s) {
         if (*s == '(') {
             func = YES;
             tok->type = T_FUNC;
-            nested++;
+            nestfunc++;
         }
         else if (*s == ')') {
-            nested--;
-            if (nested == 0)
-                func = NO, tok->tok[i++] = *s;;
+            if (--nestfunc == 0)
+                func = NO, tok->tok[i++] = *s;
         }
         else if (*s == '"' && !func) {
             quot = (quot) ? NO : YES;
             tok->type = T_LIT;
         }
         else if ((*s == '[' || *s == ']') && !func) {
-            arr = (arr) ? NO : YES;
             tok->type = T_LIT;
+            if (*s == ']') {
+                if (--nestarr == 0)
+                    arr = NO, tok->tok[i++] = *s;
+            }
+            else if (*s == '[') {
+                nestarr++;
+                arr = YES;
+            }
+                
         }
         else if ((*s == '{' || *s == '}') && !func) {
             dict = (dict) ? NO : YES;
@@ -383,7 +390,7 @@ struct token *gettok(char *s) {
         }
 
         else if (*s == '#')
-            return ret;
+            return remwht(ret);
         
         
         if (!isalnum(*s) && !quot && !func && !arr && !dict) {
