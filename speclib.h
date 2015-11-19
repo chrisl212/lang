@@ -22,6 +22,9 @@ struct var *specprnt(struct array *);
 struct var *idx(struct array *);
 struct var *input(struct array *);
 struct var *grtr(struct array *);
+struct var *less(struct array *);
 struct var *eq(struct array *);
+struct var *noteq(struct array *);
+struct var *toint(struct array *);
 
 #endif /* defined(__pewter_lang__speclib__) */

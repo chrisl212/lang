@@ -11,18 +11,17 @@ func pow(m n)
     m
 end
 
-func entry(argc argv)
+func main(argc argv)
     (output "Enter your name")
 
     q = (pow 4 2); (output (pow 4 (- 9 6))); # expressions can be separated by either a newline or semicolon
 
-    arg = (obj argv 1) #idx is the current solution for 'object at index' -- likely to change
-    (output arg)
+    (output "asd")
 
     arg = 389429
     (output arg " Swag") #print takes an unlimited number of args
 
-    array = ["object 1" "object 2" 1] #nested literals
+    array = ["object 1" "object 2" "asf"] #nested literals
     (output (obj array 1))
 
     dict = {"key 1" "object 1" "key 2" "object 2"} # dictionary syntax

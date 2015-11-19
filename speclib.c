@@ -160,6 +160,17 @@ struct var *grtr(struct array *args) {
     return ret;
 }
 
+struct var *less(struct array *args) {
+    struct var *ret, *a1, *a2;
+    a1 = arrobj(args, 0);
+    a2 = arrobj(args, 1);
+    
+    ret = calloc(1, sizeof(struct var));
+    ret->type = V_BOOL;
+    ret->val.bval = (a1->val.lval < a2->val.lval);
+    return ret;
+}
+
 struct var *eq(struct array *args) {
     struct var *ret, *a1, *a2;
     a1 = arrobj(args, 0);
@@ -172,4 +183,28 @@ struct var *eq(struct array *args) {
     else if (a1->type == V_STR)
         ret->val.bval = (strcmp(a1->val.sval, a2->val.sval)) ? 0 : 1;
     return ret;
+}
+
+struct var *noteq(struct array *args) {
+    struct var *ret, *a1, *a2;
+    a1 = arrobj(args, 0);
+    a2 = arrobj(args, 1);
+    
+    ret = calloc(1, sizeof(struct var));
+    ret->type = V_BOOL;
+    if (a1->type == V_INT)
+        ret->val.bval = (a1->val.lval != a2->val.lval);
+    else if (a1->type == V_STR)
+        ret->val.bval = strcmp(a1->val.sval, a2->val.sval) ? 1 : 0;
+    return ret;
+}
+
+struct var *toint(struct array *args) {
+    struct var *a;
+    a = arrobj(args, 0);
+    if (a->type != V_INT) {
+        a->type = V_INT;
+        a->val.lval = strtold(a->val.sval, NULL);
+    }
+    return a;
 }

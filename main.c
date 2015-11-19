@@ -14,7 +14,10 @@ int main(int argc, char **argv) {
     size_t n;
     char buf[1024];
     
-    f = fopen("/Users/christopherloonam/Projects/Small Projects/pewter_lang/pewter_lang/test.prg", "r");
+    f = fopen(argv[1], "r");
+    if (!f) {
+        f = stdin;
+    }
     n = fread(buf, 1, 1024, f);
     buf[n] = 0;
     

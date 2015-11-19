@@ -1,1 +1,1 @@
-- remove requirement for spaces everywhere except for in literals, func decls/calls
+- fix array / dict literal

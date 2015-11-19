@@ -37,6 +37,7 @@ struct token *duptok(struct token *tok) {
     ret = calloc(1, sizeof(struct token));
     ret->tok = strdup(tok->tok);
     ret->type = tok->type;
+    ret->next = NULL;
     
     return ret;
 }
@@ -48,7 +49,7 @@ struct token *remwht(struct token *tok) {
     ret = cpy;
     tok = tok->next;
     while (tok) {
-        if (tok->type != T_WHT && tok->tok)
+        if (tok->type != T_WHT && tok->tok && tok->tok[0])
             cpy->next = duptok(tok), cpy = cpy->next;
         tok = tok->next;
     }
