@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "speclib.h"
+#include "standard.h"
 #include "eval.h"
 #include "token.h"
 #include "expr.h"
@@ -34,7 +34,7 @@ void parse(struct expr *);
 struct var *exec(struct func *);
 struct func *strtofunc(const char *s, struct func *f, struct expr *expr);
 struct var *strtolit(const char *s, struct func *f, struct expr *expr);
-void specfunc(void);
+void standard(void);
 
 struct func *strtofunc(const char *s, struct func *f, struct expr *expr) {
     char *argstr, *funcname, *tok, *funcpy;
@@ -44,6 +44,15 @@ struct func *strtofunc(const char *s, struct func *f, struct expr *expr) {
     
     tok = strdup(s);
     
+    if (!strpbrk(tok, " ")) {
+        call = dictobj(funcs, tok);
+        if (!call) {
+            fprintf(stderr, "No such function %s\nLine: %s\n", funcname, expr->expr);
+            return NULL;
+        }
+        call->args = arrnew(NULL);
+        return call;
+    }
     argstr = strdup(strpbrk(tok, " "));
     funcname = strtok(tok, " ");
     call = dictobj(funcs, funcname);
@@ -454,7 +463,7 @@ int eval(const char *s, int argc, char **argv) {
     strngs = arrnew(NULL);
 
     funcs = dictnew(NULL, NULL);
-    specfunc();
+    standard();
     
     ex = getexpr(s);
     parse(ex);
@@ -470,89 +479,24 @@ int eval(const char *s, int argc, char **argv) {
     }
     
     v = arrobj(entry->args, 0);
-    v->type = V_INT;
-    v->val.lval = (long double)argc;
-    
+    if (v) {
+        v->type = V_INT;
+        v->val.lval = (long double)argc;
+    }
+
     v = arrobj(entry->args, 1);
-    v->type = V_ARR;
-    v->val.aval = strngs;
+    if (v) {
+        v->type = V_ARR;
+        v->val.aval = strngs;
+    }
     
     exec(entry);
     return 1;
 }
 
-void specfunc(void) {
-    struct func *f;
-    
-    f = calloc(1, sizeof(struct func));
-    f->name = "+";
-    f->type = F_SPEC;
-    f->spec = add;
-    dictadd(funcs, f, f->name);
-    
-    f = calloc(1, sizeof(struct func));
-    f->name = "output";
-    f->type = F_SPEC;
-    f->spec = specprnt;
-    dictadd(funcs, f, f->name);
-    
-    f = calloc(1, sizeof(struct func));
-    f->name = "/";
-    f->type = F_SPEC;
-    f->spec = divd;
-    dictadd(funcs, f, f->name);
-    
-    f = calloc(1, sizeof(struct func));
-    f->name = "*";
-    f->type = F_SPEC;
-    f->spec = mult;
-    dictadd(funcs, f, f->name);
-    
-    f = calloc(1, sizeof(struct func));
-    f->name = "-";
-    f->type = F_SPEC;
-    f->spec = minus;
-    dictadd(funcs, f, f->name);
-    
-    f = calloc(1, sizeof(struct func));
-    f->name = "obj";
-    f->type = F_SPEC;
-    f->spec = idx;
-    dictadd(funcs, f, f->name);
-    
-    f = calloc(1, sizeof(struct func));
-    f->name = "input";
-    f->type = F_SPEC;
-    f->spec = input;
-    dictadd(funcs, f, f->name);
-    
-    f = calloc(1, sizeof(struct func));
-    f->name = ">";
-    f->type = F_SPEC;
-    f->spec = grtr;
-    dictadd(funcs, f, f->name);
-    
-    f = calloc(1, sizeof(struct func));
-    f->name = "<";
-    f->type = F_SPEC;
-    f->spec = grtr;
-    dictadd(funcs, f, f->name);
-    
-    f = calloc(1, sizeof(struct func));
-    f->name = "=";
-    f->type = F_SPEC;
-    f->spec = eq;
-    dictadd(funcs, f, f->name);
-    
-    f = calloc(1, sizeof(struct func));
-    f->name = "int";
-    f->type = F_SPEC;
-    f->spec = toint;
-    dictadd(funcs, f, f->name);
-    
-    f = calloc(1, sizeof(struct func));
-    f->name = "!=";
-    f->type = F_SPEC;
-    f->spec = noteq;
-    dictadd(funcs, f, f->name);
+void standard(void) {
+    arith_register(funcs);
+    io_register(funcs);
+    types_register(funcs);
+    condit_register(funcs);
 }

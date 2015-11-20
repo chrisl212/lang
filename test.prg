@@ -11,15 +11,8 @@ func pow(m n)
     m
 end
 
-func main(argc argv)
-    (output "Enter your name")
-
-    q = (pow 4 2); (output (pow 4 (- 9 6))); # expressions can be separated by either a newline or semicolon
-
-    (output "asd")
-
-    arg = 389429
-    (output arg " Swag") #print takes an unlimited number of args
+func main()
+    (output (pow 4 (- 9 6))) # expressions can be separated by either a newline or semicolon
 
     array = [0 "object 1" "object 2" ["asfd" "asdasdasd" 0]]
     (output (obj array 0))
