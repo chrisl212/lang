@@ -17,16 +17,20 @@ struct var {
     enum {
         V_STR,
         V_INT,
+        V_DOUB,
         V_ARR,
         V_DIC,
-        V_BOOL
+        V_BOOL,
+        V_FILE
     } type;
     union {
         char *sval;
-        long double lval;
+        long double fval;
+        long ival;
         struct array *aval;
         struct dict *dval;
         unsigned int bval;
+        void *pval;
     } val;
 };
 

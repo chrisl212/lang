@@ -15,15 +15,22 @@
 #include "func.h"
 
 struct var *idx(struct array *args) {
-    struct var *idx, *arr;
+    struct var *idx, *arr, *v;
     
     arr = arrobj(args, 0);
     idx = arrobj(args, 1);
     
     if (arr->type == V_ARR)
-        return arrobj(arr->val.aval, (unsigned)idx->val.lval);
+        return arrobj(arr->val.aval, (idx->type == V_INT) ? (unsigned)idx->val.ival : (unsigned)idx->val.fval);
     else if (arr->type == V_DIC)
         return dictobj(arr->val.dval, idx->val.sval);
+    else if (arr->type == V_STR) {
+        v = calloc(1, sizeof(struct var));
+        v->type = V_STR;
+        v->name = "__idx__";
+        v->val.sval = strdup(&arr->val.sval[(idx->type == V_INT) ? (unsigned)idx->val.ival : (unsigned)idx->val.fval]);
+        return v;
+    }
     return NULL;
 }
 
@@ -32,7 +39,7 @@ struct var *toint(struct array *args) {
     a = arrobj(args, 0);
     if (a->type != V_INT) {
         a->type = V_INT;
-        a->val.lval = strtold(a->val.sval, NULL);
+        a->val.ival = strtol(a->val.sval, NULL, 10);
     }
     return a;
 }
@@ -40,11 +47,41 @@ struct var *toint(struct array *args) {
 struct var *tostr(struct array *args) {
     struct var *a;
     a = arrobj(args, 0);
-    if (a->type == V_INT) {
+    if (a->type == V_DOUB) {
         a->type = V_STR;
-        asprintf(&a->val.sval, "%Lf", a->val.lval);
+        asprintf(&a->val.sval, "%Lf", a->val.fval);
+    }
+    else if (a->type == V_DOUB) {
+        a->type = V_STR;
+        asprintf(&a->val.sval, "%ld", a->val.ival);
     }
     return a;
+}
+
+struct var *count(struct array *args) {
+    struct var *a, *ret;
+    
+    ret = calloc(1, sizeof(struct var));
+    ret->type = V_INT;
+    a = arrobj(args, 0);
+    switch (a->type) {
+        case V_STR:
+            ret->val.ival = (long)strlen(a->val.sval);
+            break;
+            
+        case V_ARR:
+            ret->val.ival = (long)arrcnt(a->val.aval);
+            break;
+            
+        case V_DIC:
+            ret->val.ival = (long)dictcnt(a->val.dval);
+            break;
+            
+        default:
+            break;
+    }
+    
+    return ret;
 }
 
 void types_register(struct dict *funcs) {
@@ -66,5 +103,11 @@ void types_register(struct dict *funcs) {
     f->name = "str";
     f->type = F_SPEC;
     f->spec = tostr;
+    dictadd(funcs, f, f->name);
+    
+    f = calloc(1, sizeof(struct func));
+    f->name = "count";
+    f->type = F_SPEC;
+    f->spec = count;
     dictadd(funcs, f, f->name);
 }

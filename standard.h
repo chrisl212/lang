@@ -13,5 +13,6 @@
 #include "io.h"
 #include "types.h"
 #include "conditionals.h"
+#include "cpu.h"
 
 #endif /* defined(__pewter_lang__speclib__) */

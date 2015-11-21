@@ -44,6 +44,7 @@ struct func *strtofunc(const char *s, struct func *f, struct expr *expr) {
     
     tok = strdup(s);
     
+    while (isspace(*tok)) tok++; /* remove leading whitespace */
     if (!strpbrk(tok, " ")) {
         call = dictobj(funcs, tok);
         if (!call) {
@@ -96,6 +97,7 @@ struct func *strtofunc(const char *s, struct func *f, struct expr *expr) {
         arradd(call->args, arg);
         atok = atok->next;
     }
+    
     return call;
 }
 
@@ -118,10 +120,20 @@ struct var *strtolit(const char *s, struct func *f, struct expr *expr) {
         arg->name = funcname;
     }
     /* number literal */
-    else if (isdigit(*funcname)) {
-        arg->type = V_INT;
-        arg->val.lval = strtold(funcname, NULL);
-        arg->name = funcname;
+    else if ((isdigit(*s) || (*s == '-' && isdigit(*(s+1))))) {
+        if (!strstr(s, ".")) {
+            arg->type = V_INT;
+            if (*funcname == '0')
+                arg->val.ival = strtol(funcname, NULL, 2);
+            else
+                arg->val.ival = strtol(funcname, NULL, 10);
+            arg->name = funcname;
+        }
+        else {
+            arg->type = V_DOUB;
+            arg->val.fval = strtold(funcname, NULL);
+            arg->name = funcname;
+        }
     }
     else if (*funcname == '[') {
         funcname++;
@@ -187,7 +199,16 @@ struct var *exec(struct func *f) {
     while (i < arrcnt(f->args)) {
         aname = arrobj(f->argnms, i);
         v = arrobj(f->args, i++);
-        dictadd(f->scope, v, aname);
+        if (aname)
+            dictadd(f->scope, v, aname);
+    }
+    if (f->type == F_NORM) {
+        v = calloc(1, sizeof(struct var));
+        v->type = V_ARR;
+        v->val.aval = f->args;
+        v->name = "args";
+        
+        dictadd(f->scope, v, "args");
     }
     
     arg = NULL;
@@ -394,13 +415,15 @@ struct token *gettok(char *s) {
             dict = (dict) ? NO : YES;
             tok->type = T_LIT;
         }
-        else if (isdigit(*s) && i < 1) {
+        else if (((isdigit(*s) || (*s == '-' && isdigit(*(s+1))))) && i < 1) {
             tok->type = T_LIT;
+            tok->tok[i++] = *s++;
         }
-
         else if (*s == '#')
             return remwht(ret);
-        
+        if (*s == '.' && tok->type == T_LIT && !quot) {
+            tok->tok[i++] = *s++;
+        }
         
         if (!isalnum(*s) && !quot && !func && !arr && !dict) {
             tok->next = calloc(1, sizeof(struct token));
@@ -481,7 +504,7 @@ int eval(const char *s, int argc, char **argv) {
     v = arrobj(entry->args, 0);
     if (v) {
         v->type = V_INT;
-        v->val.lval = (long double)argc;
+        v->val.ival = (long)argc;
     }
 
     v = arrobj(entry->args, 1);
@@ -499,4 +522,5 @@ void standard(void) {
     io_register(funcs);
     types_register(funcs);
     condit_register(funcs);
+    cpu_register(funcs);
 }

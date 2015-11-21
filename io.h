@@ -15,6 +15,7 @@ struct dict;
 struct var;
 struct array;
 
+struct var *fiopen(struct array *);
 struct var *input(struct array *);
 struct var *output(struct array *);
 void io_register(struct dict *);

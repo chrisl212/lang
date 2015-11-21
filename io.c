@@ -7,6 +7,7 @@
 */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "var.h"
 #include "array.h"
@@ -14,37 +15,72 @@
 #include "dict.h"
 #include "func.h"
 
+struct var *fiopen(struct array *args) {
+    struct var *ret;
+    
+    if (arrcnt(args) < 1)
+        return NULL;
+    ret = calloc(1, sizeof(struct var));
+    
+    ret->type = V_FILE;
+    ret->val.sval = ((struct var *)arrobj(args, 0))->val.sval;
+    
+    return ret;
+}
+
 struct var *output(struct array *args) {
     struct var *v;
-    unsigned i;
+    unsigned i, j;
+    FILE *f;
+    
+    f = stdout;
+    for (j = i = 0; i < arrcnt(args); i++) {
+        v = arrobj(args, i);
+        if (v->type == V_FILE)
+            f = fopen(v->val.sval, "a+"), j = 1;
+    }
     
     for (i = 0; i < arrcnt(args); i++) {
         v = arrobj(args, i);
         switch (v->type) {
+            case V_DOUB:
+                fprintf(f, "%.6Lf", v->val.fval);
+                break;
+                
             case V_INT:
-                printf("%.0Lf", v->val.lval);
+                fprintf(f, "%ld", v->val.ival);
                 break;
                 
             case V_STR:
-                printf("%s", v->val.sval);
+                fprintf(f, "%s", v->val.sval);
                 
             default:
                 break;
         }
     }
-    putchar('\n');
+    putc('\n', f);
+    if (j)
+        fclose(f);
     return NULL;
 }
 
 struct var *input(struct array *args) {
     char *buf, c;
-    size_t i;
+    size_t i, j;
     struct var *v;
+    FILE *f;
+    
+    f = stdin;
+    for (j = i = 0; i < arrcnt(args); i++) {
+        v = arrobj(args, (unsigned)i);
+        if (v->type == V_FILE)
+            f = fopen(v->val.sval, "r"), j = 1;
+    }
     
     i = 0;
     buf = malloc(1);
     args = NULL;
-    while ((c = (char)getchar()) != '\n') {
+    while ((c = (char)getc(f)) != '\n') {
         buf = realloc(buf, ++i);
         buf[i-1] = c;
     }
@@ -55,11 +91,20 @@ struct var *input(struct array *args) {
     v->type = V_STR;
     v->val.sval = buf;
     v->name = "__input__";
+    
+    if (j)
+        fclose(f);
     return v;
 }
 
 void io_register(struct dict *funcs) {
     struct func *f;
+
+    f = calloc(1, sizeof(struct func));
+    f->name = "open";
+    f->type = F_SPEC;
+    f->spec = fiopen;
+    dictadd(funcs, f, f->name);
     
     f = calloc(1, sizeof(struct func));
     f->name = "output";

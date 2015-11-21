@@ -20,6 +20,8 @@ struct var *divd(struct array *);
 struct var *mult(struct array *);
 struct var *add(struct array *);
 struct var *mod(struct array *);
+struct var *ran(struct array *);
+struct var *power(struct array *);
 void arith_register(struct dict *);
 
 #endif /* defined(__pewter_lang__arithmetic__) */
