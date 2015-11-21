@@ -28,7 +28,9 @@ struct var *idx(struct array *args) {
         v = calloc(1, sizeof(struct var));
         v->type = V_STR;
         v->name = "__idx__";
-        v->val.sval = strdup(&arr->val.sval[(idx->type == V_INT) ? (unsigned)idx->val.ival : (unsigned)idx->val.fval]);
+        v->val.sval = malloc(2);
+        strncpy(v->val.sval, &arr->val.sval[(idx->type == V_INT) ? (unsigned)idx->val.ival : (unsigned)idx->val.fval], 1);
+        v->val.sval[1] = 0;
         return v;
     }
     return NULL;
@@ -84,6 +86,32 @@ struct var *count(struct array *args) {
     return ret;
 }
 
+struct var *copy(struct array *args) {
+    struct var *a, *ret;
+
+    
+    ret = calloc(1, sizeof(struct var));
+    a = arrobj(args, 0);
+    ret->type = a->type;
+    switch (a->type) {
+        case V_STR:
+            ret->val.sval = strdup(a->val.sval);
+            break;
+            
+        case V_ARR:
+            /* ret->val.aval = (long)arrcnt(a->val.aval); TODO: implement copy for these */
+            break;
+            
+        case V_DIC:
+            ret->val.ival = (long)dictcnt(a->val.dval);
+            break;
+            
+        default:
+            break;
+    }
+    return ret;
+}
+
 void types_register(struct dict *funcs) {
     struct func *f;
     
@@ -109,5 +137,11 @@ void types_register(struct dict *funcs) {
     f->name = "count";
     f->type = F_SPEC;
     f->spec = count;
+    dictadd(funcs, f, f->name);
+    
+    f = calloc(1, sizeof(struct func));
+    f->name = "copy";
+    f->type = F_SPEC;
+    f->spec = copy;
     dictadd(funcs, f, f->name);
 }

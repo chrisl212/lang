@@ -18,6 +18,7 @@ struct array;
 struct var *idx(struct array *);
 struct var *toint(struct array *);
 struct var *tostr(struct array *);
+struct var *copy(struct array *);
 struct var *count(struct array *);
 void types_register(struct dict *);
 

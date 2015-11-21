@@ -139,6 +139,12 @@ struct var *strtolit(const char *s, struct func *f, struct expr *expr) {
         funcname++;
         funcname[strlen(funcname) - 1] = 0;
         arg->type = V_ARR;
+        
+        while (isspace(*funcname)) funcname++;
+        if (strlen(funcname) < 1) {
+            arg->val.aval = arrnew(NULL);
+            return arg;
+        }
         tok = gettok(funcname);
         
         arg->val.aval = arrnew(NULL);
@@ -323,11 +329,12 @@ struct var *exec(struct func *f) {
 
 void parse(struct expr *e) {
     struct token *tok;
-    struct expr *expr, *fexpr, tmp;
-    char *funcnm, *funcargs, *edup;
+    struct expr *expr, *fexpr, tmp, *ex;
+    char *funcnm, *funcargs, *edup, *include, *fconts;
     struct func *f;
     struct var *arg;
-    size_t i;
+    size_t i, flen;
+    FILE *inc;
     
     fexpr = NULL; f = NULL;
     for (expr = e; expr != NULL; expr = expr->next) {
@@ -354,8 +361,21 @@ void parse(struct expr *e) {
                     funcargs = strtok(NULL, " )");
                 }
             }
-            else if (strcmp(tok->tok, "end") != 0) {
+            else if (strcmp(tok->tok, "using") == 0) {
+                tok = tok->next;
+                include = malloc(strlen(tok->tok) + 5);
+                strcpy(include, tok->tok);
+                strcat(include, ".prg");
+                inc = fopen(include, "r");
+                fseek(inc, 0, SEEK_END);
+                flen = (size_t)ftell(inc);
+                fseek(inc, 0, SEEK_SET);
+                fconts = malloc(flen + 1);
+                fread(fconts, 1, flen, inc);
+                fconts[flen] = 0;
                 
+                ex = getexpr(fconts);
+                parse(ex);
             }
             if (strcmp(tok->tok, "end") == 0) {
                 if (!fexpr)

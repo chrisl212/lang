@@ -123,7 +123,7 @@ struct var *add(struct array *args) {
     }
     else if (ret->type == V_ARR) {
         ret->val.aval = ((struct var *)arrobj(args, 0))->val.aval;
-        for (i = 0; i < arrcnt(args); i++) {
+        for (i = 1; i < arrcnt(args); i++) {
             v = arrobj(args, i);
             
             arradd(ret->val.aval, v);

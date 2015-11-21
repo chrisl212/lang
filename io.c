@@ -52,13 +52,18 @@ struct var *output(struct array *args) {
                 break;
                 
             case V_STR:
+                if (strcmp(v->val.sval, "\\n") == 0) {
+                    putc('\n', f);
+                    break;
+                }
                 fprintf(f, "%s", v->val.sval);
+                break;
                 
             default:
                 break;
         }
     }
-    putc('\n', f);
+    fflush(f);
     if (j)
         fclose(f);
     return NULL;
@@ -107,7 +112,7 @@ void io_register(struct dict *funcs) {
     dictadd(funcs, f, f->name);
     
     f = calloc(1, sizeof(struct func));
-    f->name = "output";
+    f->name = "write";
     f->type = F_SPEC;
     f->spec = output;
     dictadd(funcs, f, f->name);

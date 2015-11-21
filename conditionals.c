@@ -164,7 +164,7 @@ void condit_register(struct dict *funcs) {
     f = calloc(1, sizeof(struct func));
     f->name = "<";
     f->type = F_SPEC;
-    f->spec = grtr;
+    f->spec = less;
     dictadd(funcs, f, f->name);
     
     f = calloc(1, sizeof(struct func));

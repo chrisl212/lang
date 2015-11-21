@@ -14,7 +14,7 @@
 struct token *duptok(struct token *);
 
 unsigned char iskey(struct token *tok) {
-    if (strcmp(tok->tok, "func") == 0 || strcmp(tok->tok, "end") == 0 || strcmp(tok->tok, "stop") == 0)
+    if (strcmp(tok->tok, "func") == 0 || strcmp(tok->tok, "end") == 0 || strcmp(tok->tok, "stop") == 0 || strcmp(tok->tok, "using") == 0)
         return 1;
     return 0;
 }

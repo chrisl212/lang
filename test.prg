@@ -1,11 +1,19 @@
+using standard
+
 func split(s)
     n = 0
     p = ""
-    while (< n (- (count s) 2))
+    a = []
+    while (< n (count s))
         p = (+ p (obj s n))
+
+        if (= n (/ (count s) 2))
+            (+ a (copy p))
+            p = ""
+        stop
         n = (+ n 1)
     stop
-    p
+    a
 end
 
 func main()
@@ -24,5 +32,5 @@ func main()
     (output (random))
 
     p = (split "Hello, world!")
-    (output (obj p 2))
+    (output (obj p 1))
 end
