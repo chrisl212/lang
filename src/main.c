@@ -7,7 +7,7 @@
 */
 
 #include <stdio.h>
-#include "eval.h"
+#include "parser/eval.h"
 
 int main(int argc, char **argv) {
     FILE *f;

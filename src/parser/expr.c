@@ -9,12 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "token.h"
-#include "expr.h"
-#include "func.h"
-#include "array.h"
-#include "var.h"
-#include "dict.h"
+#include "parser.h"
+#include "../foundation/foundation.h"
 
 struct expr *getexpr(const char *s) {
     char *cpy, *cpyp, *line;
@@ -77,6 +73,14 @@ void parse(struct expr *e, struct dict *funcs) {
                 strcpy(include, tok->tok);
                 strcat(include, ".prg");
                 inc = fopen(include, "r");
+                if (!inc) {
+                    include = malloc(strlen("/usr/local/include/pewter/") + strlen(tok->tok) + 5);
+                    strcpy(include, "/usr/local/include/pewter/");
+                    strcat(include, tok->tok);
+                    strcat(include, ".prg");
+                    inc = fopen(include, "r");
+                }
+                
                 fseek(inc, 0, SEEK_END);
                 flen = (size_t)ftell(inc);
                 fseek(inc, 0, SEEK_SET);

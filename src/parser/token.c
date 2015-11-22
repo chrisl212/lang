@@ -10,7 +10,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
-#include "token.h"
+#include "parser.h"
+#include "../foundation/foundation.h"
 
 #undef bool
 #define bool unsigned char
@@ -53,6 +54,8 @@ struct token *duptok(struct token *tok) {
 struct token *remwht(struct token *tok) {
     struct token *ret, *cpy;
     
+    while (tok->type == T_WHT)
+        tok = tok->next;
     cpy = duptok(tok);
     ret = cpy;
     tok = tok->next;
@@ -73,7 +76,7 @@ struct token *gettok(char *s) {
     
     ret = calloc(1, sizeof(struct token));
     
-    for (quot = dict = arr = func = NO, i = nestfunc = nestarr = 0, tok = ret; *s; s++) {
+    for (quot = dict = arr = func = NO, i = nestfunc = nestarr = 0, tok = ret; *s != '\0'; s++) {
         if (!tok->tok)
             tok->tok = malloc(1), tok->type = T_VAR;
         else
@@ -111,11 +114,15 @@ struct token *gettok(char *s) {
         else if (((isdigit(*s) || (*s == '-' && isdigit(*(s+1))))) && i < 1) {
             tok->type = T_LIT;
             tok->tok[i++] = *s++;
+            if (!*s)
+                break;
         }
         else if (*s == '#')
             return remwht(ret);
         if (*s == '.' && tok->type == T_LIT && !quot) {
             tok->tok[i++] = *s++;
+            if (!*s)
+                break;
         }
         
         if (!isalnum(*s) && !quot && !func && !arr && !dict) {

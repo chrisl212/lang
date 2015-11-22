@@ -9,10 +9,8 @@
 #include "conditionals.h"
 #include <string.h>
 #include <stdlib.h>
-#include "var.h"
-#include "dict.h"
-#include "array.h"
-#include "func.h"
+#include "../foundation/foundation.h"
+#include "../parser/parser.h"
 
 typedef enum {
     LESS,

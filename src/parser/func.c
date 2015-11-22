@@ -9,13 +9,8 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
-#include "func.h"
-#include "expr.h"
-#include "token.h"
-#include "array.h"
-#include "dict.h"
-#include "var.h"
-#include "eval.h"
+#include "parser.h"
+#include "../foundation/foundation.h"
 
 struct func *strtofunc(const char *s, struct func *f, struct expr *expr, struct dict *funcs) {
     char *argstr, *funcname, *tok, *funcpy;

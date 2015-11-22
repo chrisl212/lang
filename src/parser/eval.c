@@ -9,15 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "standard.h"
-#include "eval.h"
-#include "token.h"
-#include "expr.h"
-#include "func.h"
-#include "var.h"
-#include "array.h"
-#include "dict.h"
-#include "hash.h"
+#include "../standard/standard.h"
+#include "parser.h"
+#include "../foundation/foundation.h"
 
 void standard(struct dict *);
 
@@ -58,8 +52,6 @@ struct var *exec(struct func *f, struct dict *funcs) {
                 expr->type = E_DECL;
                 continue;
             }
-            else if (f->type == F_CTL && strcmp(tok->tok, "stop") == 0)
-                return NULL;
             else if (tok->type == T_FUNC && expr->type != E_DECL && *(tok->tok) == '(') {
                 tokcp = strdup(tok->tok);
                 tokcp++;
@@ -93,6 +85,7 @@ struct var *exec(struct func *f, struct dict *funcs) {
                     }
                     while (!strstr(expr->expr, "stop"))
                         expr = expr->next;
+                    break;
                 }
                 else if (strcmp(tok->tok, "if") == 0) {
                     tok = tok->next;
@@ -111,8 +104,11 @@ struct var *exec(struct func *f, struct dict *funcs) {
                     }
                     while (!strstr(expr->expr, "stop"))
                         expr = expr->next;
+                    break;
                 }
             }
+            else if (f->type == F_CTL && strcmp(tok->tok, "stop") == 0)
+                return NULL;
             else if (expr->next && strcmp(expr->next->tok->tok, "end") == 0 && tok->type == T_VAR) {
                 return dictobj(f->scope, tok->tok);
             }

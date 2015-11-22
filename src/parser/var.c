@@ -10,12 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "var.h"
-#include "expr.h"
-#include "func.h"
-#include "array.h"
-#include "dict.h"
-#include "token.h"
+#include "parser.h"
+#include "../foundation/foundation.h"
 
 struct var *strtolit(const char *s, struct func *f, struct expr *expr) {
     struct var *arg, *d1, *d2;

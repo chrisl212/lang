@@ -9,11 +9,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "var.h"
-#include "array.h"
 #include "io.h"
-#include "dict.h"
-#include "func.h"
+#include "../foundation/foundation.h"
+#include "../parser/parser.h"
 
 struct var *fiopen(struct array *args) {
     struct var *ret;

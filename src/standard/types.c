@@ -8,11 +8,9 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "var.h"
-#include "array.h"
-#include "dict.h"
 #include "types.h"
-#include "func.h"
+#include "../foundation/foundation.h"
+#include "../parser/parser.h"
 
 struct var *idx(struct array *args) {
     struct var *idx, *arr, *v;

@@ -4,6 +4,8 @@ func output()
         a = (obj args n)
         (write a)
         n = (+ n 1)
-        (write "\n")
     stop
+    (write "\n")
+    x = 2
+    (/ x 1)
 end

@@ -10,11 +10,9 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include "var.h"
-#include "dict.h"
-#include "array.h"
+#include "../foundation/foundation.h"
+#include "../parser/parser.h"
 #include "arithmetic.h"
-#include "func.h"
 
 typedef enum {
     ADD,

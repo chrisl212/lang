@@ -8,11 +8,9 @@
 
 #include <stdlib.h>
 #include <unistd.h>
-#include "dict.h"
-#include "array.h"
-#include "var.h"
-#include "func.h"
 #include "cpu.h"
+#include "../foundation/foundation.h"
+#include "../parser/parser.h"
 
 struct var *slp(struct array *args) {
     unsigned t;
