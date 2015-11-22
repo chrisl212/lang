@@ -1,1 +1,0 @@
-- fix getting object at index in a string- currently returns a poiter to the entire string
