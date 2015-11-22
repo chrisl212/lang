@@ -1,10 +1,10 @@
 /*
-//  func.h
-//  pewter_lang
-//
-//  Created by Christopher Loonam on 11/16/15.
-//  Copyright (c) 2015 Christopher Loonam. All rights reserved.
-*/
+ //  func.h
+ //  pewter_lang
+ //
+ //  Created by Christopher Loonam on 11/16/15.
+ //  Copyright (c) 2015 Christopher Loonam. All rights reserved.
+ */
 
 #ifndef pewter_lang_func_h
 #define pewter_lang_func_h
@@ -28,5 +28,7 @@ struct func {
     } type;
     struct var *(*spec)(struct array *args);
 };
+
+struct func *strtofunc(const char *, struct func *, struct expr *, struct dict *);
 
 #endif

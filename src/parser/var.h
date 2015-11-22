@@ -1,16 +1,18 @@
 /*
-//  var.h
-//  pewter_lang
-//
-//  Created by Christopher Loonam on 11/16/15.
-//  Copyright (c) 2015 Christopher Loonam. All rights reserved.
-*/
+ //  var.h
+ //  pewter_lang
+ //
+ //  Created by Christopher Loonam on 11/16/15.
+ //  Copyright (c) 2015 Christopher Loonam. All rights reserved.
+ */
 
 #ifndef pewter_lang_var_h
 #define pewter_lang_var_h
 
 struct array;
 struct dict;
+struct func;
+struct expr;
 
 struct var {
     char *name;
@@ -33,5 +35,7 @@ struct var {
         void *pval;
     } val;
 };
+
+struct var *strtolit(const char *, struct func *, struct expr *);
 
 #endif
