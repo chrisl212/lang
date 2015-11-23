@@ -148,7 +148,9 @@ struct var *ran(struct array *args) {
         if (a->type == V_INT || a->type == V_DOUB)
             seed = (long)((a->type == V_INT) ? a->val.ival : a->val.fval);
     }
-    
+
+    ret = calloc(1, sizeof(struct var));
+    ret->name = "__rand__";    
     ret->type = V_INT;
     ret->val.ival = (long)rand();
     

@@ -6,6 +6,7 @@
   Copyright (c) 2015 Christopher Loonam. All rights reserved.
 */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"

@@ -1,7 +1,9 @@
+#!/usr/local/bin/pewter
+
 using standard
 
 func main()
-    f = (open "/Users/christopherloonam/Desktop/text.txt")
+    f = (open (input))
     (output (input f))
 
     array = ["key 1" "object 2" ["asfd" "asdasdasd" 0]]
