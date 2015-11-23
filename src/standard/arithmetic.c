@@ -89,7 +89,17 @@ struct var *arith(struct array *args, ops op) {
 }
 
 struct var *minus(struct array *args) {
-    return arith(args, SUB);
+    struct var *v, *ret;
+    
+    ret = arrobj(args, 0);
+    if (ret->type == V_INT || ret->type == V_DOUB)
+        return arith(args, SUB);
+    else if (ret->type == V_ARR) {
+        v = arrobj(args, 1);
+	arrrm(ret->val.aval, (v->type == V_INT) ? v->val.ival : v->val.fval);
+    }
+
+    return ret;
 }
 
 struct var *divd(struct array *args) {

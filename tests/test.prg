@@ -14,5 +14,5 @@ func main()
     (output (obj dict k))
     (output (random))
     (wait 010)
-    (output (random))
+    (output (rand2))
 end

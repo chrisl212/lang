@@ -18,6 +18,7 @@ struct array;
 struct var *fiopen(struct array *);
 struct var *input(struct array *);
 struct var *output(struct array *);
+struct var *inread(struct array *);
 void io_register(struct dict *);
 
 #endif /* defined(__pewter_lang__io__) */

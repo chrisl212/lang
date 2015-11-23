@@ -100,6 +100,47 @@ struct var *input(struct array *args) {
     return v;
 }
 
+struct var *inread(struct array *args) {
+    struct var *ret, *fvar, *num, *v;
+    unsigned i;
+    FILE *f;
+    size_t numbytes;
+
+    ret = calloc(1, sizeof(struct var));
+    for (i = 0; i < arrcnt(args); i++) {
+        v = arrobj(args, i);
+        if (v->type == V_FILE)
+            fvar = v;
+        else if (v->type == V_INT || v->type == V_DOUB)
+            num = v;
+    }
+    if (!fvar)
+        f = stdin;
+    else {
+        f = fopen(fvar->val.sval, "r");
+        if (!f) return NULL;
+        if (!num) {
+            fseek(f, 0, SEEK_END);
+            num = calloc(1, sizeof(struct var));
+            num->type = V_INT;
+            num->val.ival = (long)ftell(f);
+            fseek(f, 0, SEEK_SET);
+        }
+    }
+    if (!num)
+        numbytes = 1024;
+    else
+        numbytes = (num->type == V_INT) ? (size_t)num->val.ival : (size_t)num->val.fval;
+
+    ret->val.sval = malloc(numbytes);
+    numbytes = fread(ret->val.sval, 1, numbytes, f);
+    ret->val.sval[numbytes] = 0;
+
+    if (fvar)
+        fclose(f);
+    return ret;
+}
+
 void io_register(struct dict *funcs) {
     struct func *f;
 
@@ -119,5 +160,11 @@ void io_register(struct dict *funcs) {
     f->name = "input";
     f->type = F_SPEC;
     f->spec = input;
+    dictadd(funcs, f, f->name);
+
+    f = calloc(1, sizeof(struct func));
+    f->name = "read";
+    f->type = F_SPEC;
+    f->spec = inread;
     dictadd(funcs, f, f->name);
 }

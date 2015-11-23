@@ -3,4 +3,4 @@ all:
 install:
 	mv pewter /usr/local/bin
 	mkdir -R /usr/local/include/pewter
-	cp tests/standard.prg /usr/local/include/pewter/
+	cp src/standard/stdlib/* /usr/local/include/pewter/
