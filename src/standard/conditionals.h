@@ -21,6 +21,7 @@ struct var *grteq(struct array *);
 struct var *lesseq(struct array *);
 struct var *eq(struct array *);
 struct var *noteq(struct array *);
+struct var *tern(struct array *);
 void condit_register(struct dict *);
 
 #endif /* defined(__pewter_lang__conditionals__) */

@@ -23,20 +23,16 @@ struct func *strtofunc(const char *s, struct func *f, struct expr *expr, struct 
     while (isspace(*tok)) tok++; /* remove leading whitespace */
     if (!strpbrk(tok, " ")) {
         call = dictobj(funcs, tok);
-        if (!call) {
-            fprintf(stderr, "No such function %s\nLine: %s\n", funcname, expr->expr);
-            return NULL;
-        }
+        if (!call)
+            error(-1, "No such function %s\nLine: %s\n", funcname, expr->expr);
         call->args = arrnew(NULL);
         return call;
     }
     argstr = strdup(strpbrk(tok, " "));
     funcname = strtok(tok, " ");
     call = dictobj(funcs, funcname);
-    if (!call) {
-        fprintf(stderr, "No such function %s\nLine: %s\n", funcname, expr->expr);
-        return NULL;
-    }
+    if (!call) 
+        error(-1, "No such function %s\nLine: %s\n", funcname, expr->expr);
     call->args = arrnew(NULL);
     arg = NULL;
     
@@ -51,9 +47,8 @@ struct func *strtofunc(const char *s, struct func *f, struct expr *expr, struct 
                 break;
             case T_VAR:
                 arg = dictobj(f->scope, funcname);
-                if (!arg) {
-                    fprintf(stderr, "No such variable %s\nLine: %s\n", funcname, expr->expr);
-                }
+                if (!arg)
+                    error(-2, "No such variable %s\nLine: %s\n", funcname, expr->expr);
                 break;
             case T_FUNC:
                 funcpy = strdup(atok->tok);

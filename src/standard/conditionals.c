@@ -144,6 +144,19 @@ struct var *noteq(struct array *args) {
         return compf(args, NOTEQ);
 }
 
+struct var *tern(struct array *args) {
+    struct var *condit, *o1, *o2;
+
+    if (!(condit = arrobj(args, 0)) || condit->type != V_BOOL)
+        return NULL;
+    if (!(o1 = arrobj(args, 1)))
+        return NULL;
+    if (!(o2 = arrobj(args, 2)))
+        return NULL;
+
+    return (condit->val.bval) ? o1 : o2;
+}
+
 void condit_register(struct dict *funcs) {
     struct func *f;
     
@@ -181,5 +194,11 @@ void condit_register(struct dict *funcs) {
     f->name = "!=";
     f->type = F_SPEC;
     f->spec = noteq;
+    dictadd(funcs, f, f->name);
+
+    f = calloc(1, sizeof(struct func));
+    f->name = "?";
+    f->type = F_SPEC;
+    f->spec = tern;
     dictadd(funcs, f, f->name);
 }

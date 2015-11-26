@@ -14,5 +14,6 @@
 #include "func.h"
 #include "token.h"
 #include "var.h"
+#include "err.h"
 
 #endif

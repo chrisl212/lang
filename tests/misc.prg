@@ -8,5 +8,5 @@ func main()
 	(- array 2)
 	(output (obj array 2))
 
-	(output (read (open (input))))
+	(output (+ (% (random) 6) 1)) 
 end

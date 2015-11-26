@@ -67,6 +67,27 @@ struct var *exec(struct func *f, struct dict *funcs) {
                 if (expr->next && strcmp(expr->next->tok->tok, "end") == 0)
                     return callres;
             }
+            else if (strcmp(tok->tok, "return") == 0) {
+                tok = tok->next;
+                switch (tok->type) {
+                    case T_VAR:
+                        return dictobj(f->scope, tok->tok);
+                    case T_FUNC:
+                        tokcp = strdup(tok->tok);
+                        tokcp++;
+                        tokcp[strlen(tokcp) - 1] = 0;
+                        call = strtofunc(tokcp, f, expr, funcs);
+                        if (call->type == F_NORM)
+                            callres = exec(call, funcs);
+                        else
+                            callres = call->spec(call->args);
+                        return callres;
+                    case T_LIT:
+                        return strtolit(tok->tok, f, expr);
+                    default:
+                        return NULL;
+                }
+            }
             else if (tok->type == T_CTL) {
                 if (strcmp(tok->tok, "while") == 0) {
                     tok = tok->next;
@@ -80,7 +101,9 @@ struct var *exec(struct func *f, struct dict *funcs) {
                         ctl->type = F_CTL;
                         ctl->args = arrnew(NULL);
                         ctl->scope = f->scope;
-                        exec(ctl, funcs);
+                        callres = exec(ctl, funcs);
+                        if (callres)
+                            return callres;
                         call = strtofunc(tokcp, f, expr, funcs);
                     }
                     while (!strstr(expr->expr, "stop"))
@@ -99,7 +122,9 @@ struct var *exec(struct func *f, struct dict *funcs) {
                         ctl->type = F_CTL;
                         ctl->args = arrnew(NULL);
                         ctl->scope = f->scope;
-                        exec(ctl, funcs);
+                        callres = exec(ctl, funcs);
+                        if (callres)
+                            return callres;
                         call = strtofunc(tokcp, f, expr, funcs);
                     }
                     while (!strstr(expr->expr, "stop"))
@@ -171,7 +196,8 @@ int eval(const char *s, int argc, char **argv) {
     parse(ex, funcs);
     
     entry = dictobj(funcs, "main");
-    
+    if (!entry)
+        error(1, "Programs must declare a main() function");
     for (i = 0; i < argc; i++) {
         v = calloc(1, sizeof(struct var));
         v->name = "__arg__";

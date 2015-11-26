@@ -107,5 +107,7 @@ struct var *strtolit(const char *s, struct func *f, struct expr *expr) {
             tok = tok->next;
         }
     }
+    else
+        error(-3, "Unknown literal type %s\nLine: %s", funcname, expr->expr);
     return arg;
 }
